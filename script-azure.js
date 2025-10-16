@@ -97,8 +97,19 @@ class NataliVoiceAgent {
         }
     }
 
-    startListening() {
+    async startListening() {
         if (this.isListening || this.isSpeaking || this.isProcessing) return;
+
+        // Request microphone permission on mobile
+        try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+        } catch (error) {
+            console.error('Microphone permission denied:', error);
+            this.statusText.textContent = 'יש לאפשר גישה למיקרופון';
+            return;
+        }
 
         try {
             this.recognition.start();
