@@ -41,8 +41,34 @@ class NataliVoiceAgent {
         this.recognition.onerror = (event) => this.onError(event);
         this.recognition.onend = () => this.onListeningEnd();
 
+        // Load voices and initialize Azure Speech Service
+        this.loadVoices();
+
         // Initialize Azure Speech Service
         this.initAzureSpeech();
+    }
+
+    loadVoices() {
+        // Force load voices
+        const loadVoicesImpl = () => {
+            this.availableVoices = window.speechSynthesis.getVoices();
+            if (this.availableVoices.length > 0) {
+                console.log('Voices loaded:', this.availableVoices.length);
+                console.log('Available Hebrew voices:',
+                    this.availableVoices
+                        .filter(v => v.lang.startsWith('he'))
+                        .map(v => `${v.name} (${v.lang}) - ${v.localService ? 'Local' : 'Remote'}`)
+                );
+            }
+        };
+
+        // Voices might load asynchronously
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = loadVoicesImpl;
+        }
+
+        // Also try loading immediately
+        loadVoicesImpl();
     }
 
     initAzureSpeech() {
@@ -276,26 +302,28 @@ class NataliVoiceAgent {
             utterance.pitch = 1.05;
             utterance.volume = 1.0;
 
-            // Try to find the best Hebrew voice
-            const voices = window.speechSynthesis.getVoices();
+            // Use cached voices or get fresh ones
+            const voices = this.availableVoices || window.speechSynthesis.getVoices();
 
-            // Log available voices for debugging
-            console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`).join(', '));
+            console.log('Total voices available:', voices.length);
+            console.log('Hebrew voices:', voices.filter(v => v.lang.startsWith('he')).map(v => v.name));
 
             // Priority order for Hebrew voices
             const hebrewVoice =
+                // Look for Carmit or other named voices (usually higher quality)
+                voices.find(v => v.lang.startsWith('he') && v.name.toLowerCase().includes('carmit')) ||
                 // Look for premium/enhanced voices
                 voices.find(v => v.lang.startsWith('he') && (v.name.includes('Premium') || v.name.includes('Enhanced'))) ||
-                // Look for named Hebrew voices (like Carmit)
+                // Look for remote/cloud voices (usually better quality)
                 voices.find(v => v.lang.startsWith('he') && !v.localService) ||
                 // Any Hebrew voice
-                voices.find(v => v.lang.startsWith('he')) ||
-                // Fallback to any voice
-                voices[0];
+                voices.find(v => v.lang.startsWith('he'));
 
             if (hebrewVoice) {
                 utterance.voice = hebrewVoice;
-                console.log('Using voice:', hebrewVoice.name, hebrewVoice.lang);
+                console.log('✅ Selected voice:', hebrewVoice.name, '(' + hebrewVoice.lang + ')', hebrewVoice.localService ? 'Local' : 'Remote');
+            } else {
+                console.warn('⚠️ No Hebrew voice found! Using default.');
             }
 
             utterance.onend = () => {
