@@ -18,24 +18,21 @@ let AZURE_CONFIG = {
     }
 };
 
+// Promise to track configuration loading
+let configReady = Promise.resolve();
+
 // Load configuration from serverless function if not already set
 if (!window.ENV) {
-    fetch('/api/config')
+    configReady = fetch('/api/config')
         .then(response => response.json())
         .then(config => {
-            AZURE_CONFIG = {
-                openai: {
-                    endpoint: config.AZURE_OPENAI_ENDPOINT,
-                    apiKey: config.AZURE_OPENAI_API_KEY,
-                    deploymentName: config.AZURE_OPENAI_DEPLOYMENT,
-                    apiVersion: config.AZURE_OPENAI_API_VERSION
-                },
-                speech: {
-                    apiKey: config.AZURE_SPEECH_API_KEY,
-                    region: config.AZURE_SPEECH_REGION,
-                    voiceName: config.AZURE_SPEECH_VOICE
-                }
-            };
+            AZURE_CONFIG.openai.endpoint = config.AZURE_OPENAI_ENDPOINT;
+            AZURE_CONFIG.openai.apiKey = config.AZURE_OPENAI_API_KEY;
+            AZURE_CONFIG.openai.deploymentName = config.AZURE_OPENAI_DEPLOYMENT;
+            AZURE_CONFIG.openai.apiVersion = config.AZURE_OPENAI_API_VERSION;
+            AZURE_CONFIG.speech.apiKey = config.AZURE_SPEECH_API_KEY;
+            AZURE_CONFIG.speech.region = config.AZURE_SPEECH_REGION;
+            AZURE_CONFIG.speech.voiceName = config.AZURE_SPEECH_VOICE;
             console.log('Configuration loaded from API');
         })
         .catch(error => {

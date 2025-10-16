@@ -149,6 +149,9 @@ class NataliVoiceAgent {
     }
 
     async generateAIResponse(userMessage) {
+        // Wait for configuration to load
+        await configReady;
+
         // Add user message to conversation history
         this.conversationHistory.push({
             role: 'user',
