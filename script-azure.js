@@ -300,6 +300,14 @@ class NataliVoiceAgent {
 
     speakWithAzure(text) {
         return new Promise((resolve, reject) => {
+            // Check if we're on iOS - if so, use browser TTS instead
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                console.log('iOS detected, using browser TTS instead of Azure Speech');
+                this.speakWithBrowser(text).then(resolve).catch(reject);
+                return;
+            }
+
             // Use SSML for better control
             const ssml = `
                 <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="he-IL">
@@ -327,10 +335,9 @@ class NataliVoiceAgent {
                 },
                 (error) => {
                     console.error('Azure TTS error:', error);
-                    this.isSpeaking = false;
-                    this.voiceIndicator.classList.remove('speaking');
-                    this.resetUI();
-                    reject(error);
+                    // Fallback to browser TTS on error
+                    console.log('Falling back to browser TTS');
+                    this.speakWithBrowser(text).then(resolve).catch(reject);
                 }
             );
         });
@@ -338,6 +345,8 @@ class NataliVoiceAgent {
 
     speakWithBrowser(text) {
         return new Promise((resolve) => {
+            // iOS requires speech synthesis to be triggered by user interaction
+            // We'll ensure it's called in the right context
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'he-IL';
             utterance.rate = 0.95;
@@ -347,6 +356,7 @@ class NataliVoiceAgent {
             // Use cached voices or get fresh ones
             const voices = this.availableVoices || window.speechSynthesis.getVoices();
 
+            console.log('🔊 Speaking with browser TTS');
             console.log('Total voices available:', voices.length);
             console.log('Hebrew voices:', voices.filter(v => v.lang.startsWith('he')).map(v => v.name));
 
@@ -368,7 +378,12 @@ class NataliVoiceAgent {
                 console.warn('⚠️ No Hebrew voice found! Using default.');
             }
 
+            utterance.onstart = () => {
+                console.log('🎤 Speech started');
+            };
+
             utterance.onend = () => {
+                console.log('✅ Speech completed');
                 this.isSpeaking = false;
                 this.voiceIndicator.classList.remove('speaking');
                 this.statusText.textContent = 'לחצו על המיקרופון כדי להמשיך';
@@ -377,17 +392,21 @@ class NataliVoiceAgent {
             };
 
             utterance.onerror = (event) => {
-                console.error('Browser TTS error:', event);
+                console.error('❌ Browser TTS error:', event.error);
                 this.isSpeaking = false;
                 this.voiceIndicator.classList.remove('speaking');
                 this.resetUI();
                 resolve();
             };
 
+            // Cancel any ongoing speech
             window.speechSynthesis.cancel();
+
+            // iOS Safari sometimes needs a small delay
             setTimeout(() => {
+                console.log('▶️ Starting speech synthesis...');
                 window.speechSynthesis.speak(utterance);
-            }, 50);
+            }, 100);
         });
     }
 
