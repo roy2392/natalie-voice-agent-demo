@@ -131,7 +131,19 @@ class NataliVoiceAgent {
         this.voiceButton.classList.remove('listening');
         this.voiceButton.style.display = 'block';
         this.stopButton.style.display = 'none';
-        this.statusText.textContent = 'לחצו על המיקרופון כדי להתחיל';
+
+        // Update button text based on conversation history
+        this.updateButtonText();
+
+        // Update status text
+        const hasConversation = this.conversationHistory.length > 0;
+        this.statusText.textContent = hasConversation ? 'לחצו על המיקרופון כדי להמשיך' : 'לחצו על המיקרופון כדי להתחיל';
+    }
+
+    updateButtonText() {
+        const buttonText = this.voiceButton.querySelector('.button-text');
+        const hasConversation = this.conversationHistory.length > 0;
+        buttonText.textContent = hasConversation ? 'המשך שיחה' : 'התחל שיחה';
     }
 
     onListeningStart() {
