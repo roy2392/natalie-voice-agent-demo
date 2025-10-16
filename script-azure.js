@@ -276,11 +276,26 @@ class NataliVoiceAgent {
             utterance.pitch = 1.05;
             utterance.volume = 1.0;
 
-            // Try to find Hebrew voice
+            // Try to find the best Hebrew voice
             const voices = window.speechSynthesis.getVoices();
-            const hebrewVoice = voices.find(voice => voice.lang.startsWith('he'));
+
+            // Log available voices for debugging
+            console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`).join(', '));
+
+            // Priority order for Hebrew voices
+            const hebrewVoice =
+                // Look for premium/enhanced voices
+                voices.find(v => v.lang.startsWith('he') && (v.name.includes('Premium') || v.name.includes('Enhanced'))) ||
+                // Look for named Hebrew voices (like Carmit)
+                voices.find(v => v.lang.startsWith('he') && !v.localService) ||
+                // Any Hebrew voice
+                voices.find(v => v.lang.startsWith('he')) ||
+                // Fallback to any voice
+                voices[0];
+
             if (hebrewVoice) {
                 utterance.voice = hebrewVoice;
+                console.log('Using voice:', hebrewVoice.name, hebrewVoice.lang);
             }
 
             utterance.onend = () => {
