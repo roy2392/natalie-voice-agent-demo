@@ -72,10 +72,29 @@ class NataliVoiceAgent {
     }
 
     initAzureSpeech() {
-        // Disable Azure Speech and use browser TTS for better voice quality
-        // Azure Speech SDK will be loaded from CDN in HTML, but we're not using it
-        console.log('Using browser TTS for natural Hebrew voice');
-        this.speechSynthesizer = null;
+        // Azure Speech SDK will be loaded from CDN in HTML
+        if (typeof SpeechSDK !== 'undefined' && AZURE_CONFIG.speech.apiKey) {
+            try {
+                const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+                    AZURE_CONFIG.speech.apiKey,
+                    AZURE_CONFIG.speech.region
+                );
+                speechConfig.speechSynthesisVoiceName = AZURE_CONFIG.speech.voiceName;
+                speechConfig.speechSynthesisLanguage = 'he-IL';
+
+                // Use browser audio output
+                const audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+                this.speechSynthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+
+                console.log('Azure Speech Service initialized successfully');
+            } catch (error) {
+                console.warn('Azure Speech initialization failed, falling back to browser TTS:', error);
+                this.speechSynthesizer = null;
+            }
+        } else {
+            console.warn('Azure Speech SDK not loaded or no API key, falling back to browser TTS');
+            this.speechSynthesizer = null;
+        }
     }
 
     startListening() {
