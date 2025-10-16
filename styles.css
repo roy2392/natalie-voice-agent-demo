@@ -313,6 +313,25 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 15px;
+    }
+
+    .logo {
+        max-width: 150px;
+        margin-bottom: 15px;
+    }
+
     .header h1 {
         font-size: 1.8rem;
     }
@@ -337,15 +356,140 @@ body {
     }
 
     .agent-container {
-        padding: 25px;
+        padding: 20px 15px;
+        border-radius: 15px;
+    }
+
+    .status-text {
+        font-size: 1.1rem;
+        padding: 0 10px;
+    }
+
+    .conversation {
+        max-height: 300px;
+        padding: 15px;
+    }
+
+    .message {
+        max-width: 85%;
+        padding: 12px 15px;
+        font-size: 0.95rem;
+    }
+
+    .message-label {
+        font-size: 0.75rem;
+    }
+
+    .voice-button, .stop-button {
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        width: 100%;
+        max-width: 300px;
     }
 
     .info-cards {
         grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .info-card {
+        padding: 20px;
+    }
+
+    .card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .info-card h3 {
+        font-size: 1.1rem;
+    }
+
+    .info-card p {
+        font-size: 1rem;
+    }
+
+    .footer {
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 20px;
+    }
+
+    .footer p {
+        font-size: 0.9rem;
+    }
+
+    .contact-info {
+        font-size: 0.85rem;
+    }
+}
+
+/* Extra small devices (phones in portrait, less than 576px) */
+@media (max-width: 576px) {
+    .container {
+        padding: 10px;
+    }
+
+    .header {
+        padding: 15px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .logo {
+        max-width: 120px;
+    }
+
+    .voice-indicator {
+        width: 100px;
+        height: 100px;
+    }
+
+    .microphone-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .microphone-icon svg {
+        width: 25px;
+        height: 25px;
+    }
+
+    .status-text {
+        font-size: 1rem;
+    }
+
+    .voice-button, .stop-button {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+
+    .conversation {
+        max-height: 250px;
+        padding: 10px;
     }
 
     .message {
-        max-width: 90%;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    .info-card {
+        padding: 15px;
+    }
+
+    .card-icon {
+        font-size: 2rem;
+    }
+
+    .footer {
+        padding: 15px;
     }
 }
 
