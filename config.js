@@ -1,10 +1,10 @@
 // Azure AI Configuration
-// Configuration is loaded from window.ENV which should be set by a server or build process
+// Configuration will be loaded from environment variables
 
-const AZURE_CONFIG = {
+let AZURE_CONFIG = {
     // Azure OpenAI Configuration
     openai: {
-        endpoint: window.ENV?.AZURE_OPENAI_ENDPOINT || 'https://roeyzalta-resource.cognitiveservices.azure.com',
+        endpoint: window.ENV?.AZURE_OPENAI_ENDPOINT || '',
         apiKey: window.ENV?.AZURE_OPENAI_API_KEY || '',
         deploymentName: window.ENV?.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o',
         apiVersion: window.ENV?.AZURE_OPENAI_API_VERSION || '2024-12-01-preview'
@@ -17,6 +17,31 @@ const AZURE_CONFIG = {
         voiceName: window.ENV?.AZURE_SPEECH_VOICE || 'he-IL-HilaNeural'
     }
 };
+
+// Load configuration from serverless function if not already set
+if (!window.ENV) {
+    fetch('/api/config')
+        .then(response => response.json())
+        .then(config => {
+            AZURE_CONFIG = {
+                openai: {
+                    endpoint: config.AZURE_OPENAI_ENDPOINT,
+                    apiKey: config.AZURE_OPENAI_API_KEY,
+                    deploymentName: config.AZURE_OPENAI_DEPLOYMENT,
+                    apiVersion: config.AZURE_OPENAI_API_VERSION
+                },
+                speech: {
+                    apiKey: config.AZURE_SPEECH_API_KEY,
+                    region: config.AZURE_SPEECH_REGION,
+                    voiceName: config.AZURE_SPEECH_VOICE
+                }
+            };
+            console.log('Configuration loaded from API');
+        })
+        .catch(error => {
+            console.error('Failed to load configuration:', error);
+        });
+}
 
 // System prompt for the Natali voice agent
 const NATALI_SYSTEM_PROMPT = `אתה סוכן קולי חכם ומקצועי עבור חברת נטלי - החברה הגדולה והוותיקה ביותר לשירותי רפואה ביתיים בישראל.
