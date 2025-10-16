@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>נטלי - סוכן קולי חכם</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Azure Speech SDK -->
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Logo -->
+        <header class="header">
+            <img src="https://www.natali.co.il/wp-content/uploads/2019/11/logo-300x117.png" alt="נטלי לוגו" class="logo">
+            <h1>סוכן קולי חכם</h1>
+            <p class="subtitle">שאלו אותי כל שאלה על שירותי נטלי</p>
+        </header>
+
+        <!-- Voice Agent Interface -->
+        <main class="main-content">
+            <div class="agent-container">
+                <!-- Voice Animation -->
+                <div class="voice-indicator" id="voiceIndicator">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring delay-1"></div>
+                    <div class="pulse-ring delay-2"></div>
+                    <div class="microphone-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Status Text -->
+                <div class="status-text" id="statusText">לחצו על המיקרופון כדי להתחיל</div>
+
+                <!-- Conversation Display -->
+                <div class="conversation" id="conversation"></div>
+
+                <!-- Control Button -->
+                <button class="voice-button" id="voiceButton">
+                    <span class="button-text">התחל שיחה</span>
+                </button>
+
+                <!-- Stop Button (hidden initially) -->
+                <button class="stop-button" id="stopButton" style="display: none;">
+                    <span class="button-text">עצור</span>
+                </button>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="info-cards">
+                <div class="info-card">
+                    <div class="card-icon">📞</div>
+                    <h3>מוקד חירום 24/7</h3>
+                    <p>*3380</p>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">🏥</div>
+                    <h3>שירותי רפואה ביתיים</h3>
+                    <p>טיפול סיעודי מקצועי</p>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">👨‍⚕️</div>
+                    <h3>למעלה מ-30 שנה</h3>
+                    <p>ניסיון ומקצועיות</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>נטלי - החברה הגדולה והוותיקה ביותר לשירותי רפואה ביתיים בישראל</p>
+            <p class="contact-info">📍 רחוב החילזון 4, רמת גן | 📞 03-6076111</p>
+        </footer>
+    </div>
+
+    <!-- Load environment variables (only for local development) -->
+    <script src="env.js"></script>
+    <!-- Load configuration -->
+    <script src="config.js"></script>
+    <!-- Load Azure-powered script -->
+    <script src="script-azure.js"></script>
+</body>
+</html>
