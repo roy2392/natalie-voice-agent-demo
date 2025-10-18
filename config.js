@@ -2,15 +2,15 @@
 // Configuration will be loaded from environment variables
 
 let AZURE_CONFIG = {
-    // Azure OpenAI Configuration
+    // OpenAI API Configuration (for Realtime API)
     openai: {
         endpoint: window.ENV?.AZURE_OPENAI_ENDPOINT || '',
-        apiKey: window.ENV?.AZURE_OPENAI_API_KEY || '',
+        apiKey: window.ENV?.OPENAI_API_KEY || window.ENV?.AZURE_OPENAI_API_KEY || '',
         deploymentName: window.ENV?.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o',
         apiVersion: window.ENV?.AZURE_OPENAI_API_VERSION || '2024-12-01-preview'
     },
 
-    // Azure Speech Service Configuration
+    // Azure Speech Service Configuration (fallback)
     speech: {
         apiKey: window.ENV?.AZURE_SPEECH_API_KEY || '',
         region: window.ENV?.AZURE_SPEECH_REGION || 'eastus2',
@@ -27,7 +27,7 @@ if (!window.ENV) {
         .then(response => response.json())
         .then(config => {
             AZURE_CONFIG.openai.endpoint = config.AZURE_OPENAI_ENDPOINT;
-            AZURE_CONFIG.openai.apiKey = config.AZURE_OPENAI_API_KEY;
+            AZURE_CONFIG.openai.apiKey = config.OPENAI_API_KEY || config.AZURE_OPENAI_API_KEY;
             AZURE_CONFIG.openai.deploymentName = config.AZURE_OPENAI_DEPLOYMENT;
             AZURE_CONFIG.openai.apiVersion = config.AZURE_OPENAI_API_VERSION;
             AZURE_CONFIG.speech.apiKey = config.AZURE_SPEECH_API_KEY;
