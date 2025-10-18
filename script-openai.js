@@ -253,6 +253,9 @@ ${kb.faq.map(f => `
         // Wait for configuration to load
         await configReady;
 
+        console.log('API Key present:', !!AZURE_CONFIG.openai.apiKey);
+        console.log('API Key starts with sk-:', AZURE_CONFIG.openai.apiKey?.startsWith('sk-'));
+
         // Add user message to conversation history
         this.conversationHistory.push({
             role: 'user',
@@ -276,6 +279,7 @@ ${kb.faq.map(f => `
         };
 
         try {
+            console.log('Calling OpenAI API...');
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -285,13 +289,16 @@ ${kb.faq.map(f => `
                 body: JSON.stringify(requestBody)
             });
 
+            console.log('Response status:', response.status);
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('OpenAI API error:', errorText);
-                throw new Error(`API request failed: ${response.status}`);
+                console.error('OpenAI API error response:', errorText);
+                throw new Error(`API request failed: ${response.status} - ${errorText}`);
             }
 
             const data = await response.json();
+            console.log('Response received successfully');
             const assistantMessage = data.choices[0].message.content;
 
             // Add assistant response to conversation history
@@ -309,6 +316,7 @@ ${kb.faq.map(f => `
 
         } catch (error) {
             console.error('Error calling OpenAI:', error);
+            console.error('Error details:', error.message);
             throw error;
         }
     }
@@ -325,6 +333,7 @@ ${kb.faq.map(f => `
             // Wait for configuration
             await configReady;
 
+            console.log('Calling OpenAI TTS API...');
             // Use OpenAI TTS API
             const response = await fetch('https://api.openai.com/v1/audio/speech', {
                 method: 'POST',
@@ -340,10 +349,15 @@ ${kb.faq.map(f => `
                 })
             });
 
+            console.log('TTS Response status:', response.status);
+
             if (!response.ok) {
-                throw new Error('TTS API request failed');
+                const errorText = await response.text();
+                console.error('TTS API error:', errorText);
+                throw new Error(`TTS API request failed: ${response.status}`);
             }
 
+            console.log('TTS audio received, creating audio element...');
             // Get audio data
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
@@ -352,6 +366,7 @@ ${kb.faq.map(f => `
             const audio = new Audio(audioUrl);
 
             audio.onended = () => {
+                console.log('Audio playback completed');
                 this.isSpeaking = false;
                 this.voiceIndicator.classList.remove('speaking');
                 this.statusText.textContent = 'לחצו על המיקרופון כדי להמשיך';
@@ -367,10 +382,12 @@ ${kb.faq.map(f => `
                 URL.revokeObjectURL(audioUrl);
             };
 
+            console.log('Starting audio playback...');
             await audio.play();
 
         } catch (error) {
             console.error('Error with OpenAI TTS:', error);
+            console.error('TTS Error details:', error.message);
             // Fallback to browser TTS
             console.log('Falling back to browser TTS');
             await this.speakWithBrowser(text);
