@@ -23,7 +23,10 @@ let configReady = Promise.resolve();
 
 // Load configuration from serverless function if not already set
 if (!window.ENV) {
-    configReady = fetch('/api/config')
+    // Add cache-busting parameter
+    configReady = fetch('/api/config?t=' + Date.now(), {
+        cache: 'no-store'
+    })
         .then(response => response.json())
         .then(config => {
             AZURE_CONFIG.openai.endpoint = config.AZURE_OPENAI_ENDPOINT;
@@ -34,6 +37,7 @@ if (!window.ENV) {
             AZURE_CONFIG.speech.region = config.AZURE_SPEECH_REGION;
             AZURE_CONFIG.speech.voiceName = config.AZURE_SPEECH_VOICE;
             console.log('Configuration loaded from API');
+            console.log('Loaded API key starts with sk-proj:', config.OPENAI_API_KEY?.startsWith('sk-proj'));
         })
         .catch(error => {
             console.error('Failed to load configuration:', error);
