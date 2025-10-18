@@ -1,0 +1,6 @@
+env.js
+.env
+.env.local
+.env.production.local
+node_modules
+.git
