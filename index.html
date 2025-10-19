@@ -20,7 +20,34 @@
 
         <!-- Voice Agent Interface -->
         <main class="main-content">
-            <div class="agent-container">
+            <!-- Scenario Selection -->
+            <div class="scenario-selection" id="scenarioSelection">
+                <h2>בחר/י סוג שיחה:</h2>
+                <div class="scenario-buttons">
+                    <button class="scenario-btn" data-scenario="assistant">
+                        <div class="scenario-icon">🤖</div>
+                        <h3>עוזר אישי</h3>
+                        <p>מענה לשאלות ומידע אישי</p>
+                    </button>
+                    <button class="scenario-btn" data-scenario="outbound">
+                        <div class="scenario-icon">📞</div>
+                        <h3>סקר שביעות רצון</h3>
+                        <p>שיחה יוצאת - סקר ועדכון כתובת</p>
+                    </button>
+                    <button class="scenario-btn" data-scenario="inbound">
+                        <div class="scenario-icon">📝</div>
+                        <h3>קליטת פרטי פניה</h3>
+                        <p>שיחה נכנסת - רישום פרטים</p>
+                    </button>
+                </div>
+            </div>
+
+            <div class="agent-container" id="agentContainer" style="display: none;">
+                <!-- Back Button -->
+                <button class="back-button" id="backButton">
+                    ← חזרה לבחירת תסריט
+                </button>
+
                 <!-- Voice Animation -->
                 <div class="voice-indicator" id="voiceIndicator">
                     <div class="pulse-ring"></div>

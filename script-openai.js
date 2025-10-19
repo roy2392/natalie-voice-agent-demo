@@ -7,6 +7,10 @@ class NataliVoiceAgent {
         this.recognition = null;
         this.conversationHistory = [];
         this.knowledgeBase = null;
+        this.callScenarios = null;
+        this.currentScenario = null;
+        this.currentStep = 0;
+        this.collectedData = {};
 
         // Initialize elements
         this.voiceButton = document.getElementById('voiceButton');
@@ -14,13 +18,20 @@ class NataliVoiceAgent {
         this.statusText = document.getElementById('statusText');
         this.voiceIndicator = document.getElementById('voiceIndicator');
         this.conversation = document.getElementById('conversation');
+        this.scenarioSelection = document.getElementById('scenarioSelection');
+        this.agentContainer = document.getElementById('agentContainer');
+        this.backButton = document.getElementById('backButton');
 
         this.init();
     }
 
     async init() {
-        // Load knowledge base
+        // Load knowledge base and call scenarios
         await this.loadKnowledgeBase();
+        await this.loadCallScenarios();
+
+        // Setup scenario selection buttons
+        this.setupScenarioSelection();
 
         // Check browser support
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -39,6 +50,7 @@ class NataliVoiceAgent {
         // Event listeners
         this.voiceButton.addEventListener('click', () => this.startListening());
         this.stopButton.addEventListener('click', () => this.stopAgent());
+        this.backButton.addEventListener('click', () => this.returnToScenarioSelection());
 
         this.recognition.onstart = () => this.onListeningStart();
         this.recognition.onresult = (event) => this.onResult(event);
@@ -56,6 +68,147 @@ class NataliVoiceAgent {
         } catch (error) {
             console.error('Failed to load knowledge base:', error);
         }
+    }
+
+    async loadCallScenarios() {
+        try {
+            const response = await fetch('call-scenarios.json');
+            this.callScenarios = await response.json();
+            console.log('Call scenarios loaded successfully');
+        } catch (error) {
+            console.error('Failed to load call scenarios:', error);
+        }
+    }
+
+    setupScenarioSelection() {
+        const scenarioButtons = document.querySelectorAll('.scenario-btn');
+        scenarioButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const scenario = button.getAttribute('data-scenario');
+                this.selectScenario(scenario);
+            });
+        });
+    }
+
+    selectScenario(scenarioType) {
+        console.log('Selected scenario:', scenarioType);
+
+        // Reset state
+        this.conversationHistory = [];
+        this.currentStep = 0;
+        this.collectedData = {};
+        this.conversation.innerHTML = '';
+
+        // Set current scenario
+        if (scenarioType === 'assistant') {
+            this.currentScenario = 'assistant';
+        } else if (scenarioType === 'outbound') {
+            this.currentScenario = 'outbound_satisfaction';
+        } else if (scenarioType === 'inbound') {
+            this.currentScenario = 'inbound_intake_short';
+        }
+
+        // Hide scenario selection, show agent container
+        this.scenarioSelection.style.display = 'none';
+        this.agentContainer.style.display = 'flex';
+
+        // Start the conversation automatically for structured scenarios
+        if (this.currentScenario !== 'assistant') {
+            setTimeout(() => this.startStructuredCall(), 1000);
+        }
+    }
+
+    returnToScenarioSelection() {
+        // Stop any ongoing speech
+        this.stopAgent();
+
+        // Reset state
+        this.conversationHistory = [];
+        this.currentStep = 0;
+        this.collectedData = {};
+        this.currentScenario = null;
+        this.conversation.innerHTML = '';
+
+        // Show scenario selection, hide agent container
+        this.agentContainer.style.display = 'none';
+        this.scenarioSelection.style.display = 'block';
+
+        // Reset UI
+        this.resetUI();
+    }
+
+    async startStructuredCall() {
+        if (!this.callScenarios || !this.currentScenario) return;
+
+        const scenario = this.callScenarios[this.currentScenario];
+        if (!scenario) return;
+
+        // Initialize data collection
+        this.collectedData = { ...scenario.data_collection };
+        this.collectedData.timestamp = new Date().toISOString();
+
+        // Start with first step
+        this.currentStep = 0;
+        await this.executeStep();
+    }
+
+    async executeStep() {
+        if (!this.callScenarios || !this.currentScenario) return;
+
+        const scenario = this.callScenarios[this.currentScenario];
+        const step = scenario.flow.find(s => s.step === this.currentStep + 1);
+
+        if (!step) {
+            console.error('Step not found:', this.currentStep + 1);
+            return;
+        }
+
+        console.log('Executing step:', step.step, step.type);
+
+        // Get the agent's message
+        let agentMessage = step.agent_says;
+
+        // Replace placeholders (e.g., [ADDRESS])
+        if (this.currentScenario === 'outbound_satisfaction') {
+            const demoAddresses = this.callScenarios.demo_addresses;
+            if (demoAddresses && demoAddresses.length > 0) {
+                const randomAddress = demoAddresses[Math.floor(Math.random() * demoAddresses.length)];
+                agentMessage = agentMessage.replace('[ADDRESS]', randomAddress.address);
+            }
+        }
+
+        // Display and speak the message
+        this.addMessage(agentMessage, 'agent');
+        await this.speakWithOpenAI(agentMessage, true);
+
+        // If this step ends the call, finish
+        if (step.end_call) {
+            console.log('Call ended. Collected data:', this.collectedData);
+            if (step.send_webhook) {
+                await this.sendWebhook();
+            }
+            setTimeout(() => this.returnToScenarioSelection(), 3000);
+            return;
+        }
+
+        // If we should wait for response, prepare to listen
+        if (step.wait_for_response !== false) {
+            // Wait a bit then start listening
+            setTimeout(() => {
+                this.startListening();
+            }, 1500);
+        } else {
+            // Move to next step immediately
+            this.currentStep++;
+            setTimeout(() => this.executeStep(), 1000);
+        }
+    }
+
+    async sendWebhook() {
+        console.log('Sending webhook with data:', this.collectedData);
+        // TODO: Implement actual webhook integration
+        // For now, just log the data
+        alert('נתונים נאספו בהצלחה:\n' + JSON.stringify(this.collectedData, null, 2));
     }
 
     generateSystemPrompt() {
@@ -242,21 +395,80 @@ ${kb.patient_profiles.personal_assistant_capabilities.map(c => `- ${c}`).join('\
         // Display user message
         this.addMessage(transcript, 'user');
 
-        // Process with OpenAI GPT-4o
-        this.isProcessing = true;
-        this.statusText.textContent = 'חושב...';
+        // Check if we're in a structured call scenario
+        if (this.currentScenario && this.currentScenario !== 'assistant') {
+            await this.handleStructuredResponse(transcript);
+        } else {
+            // Free-form assistant mode
+            this.isProcessing = true;
+            this.statusText.textContent = 'חושב...';
 
-        try {
-            const response = await this.generateAIResponse(transcript);
-            await this.speakWithOpenAI(response);
-        } catch (error) {
-            console.error('Error generating response:', error);
-            this.statusText.textContent = 'שגיאה בקבלת תשובה';
-            this.addMessage('מצטער, אירעה שגיאה. אנא נסו שוב או חייגו 03-6076111', 'agent');
-            setTimeout(() => this.resetUI(), 3000);
+            try {
+                const response = await this.generateAIResponse(transcript);
+                await this.speakWithOpenAI(response);
+            } catch (error) {
+                console.error('Error generating response:', error);
+                this.statusText.textContent = 'שגיאה בקבלת תשובה';
+                this.addMessage('מצטער, אירעה שגיאה. אנא נסו שוב או חייגו 03-6076111', 'agent');
+                setTimeout(() => this.resetUI(), 3000);
+            }
+
+            this.isProcessing = false;
+        }
+    }
+
+    async handleStructuredResponse(userResponse) {
+        if (!this.callScenarios || !this.currentScenario) return;
+
+        const scenario = this.callScenarios[this.currentScenario];
+        const currentStepData = scenario.flow.find(s => s.step === this.currentStep + 1);
+
+        if (!currentStepData) return;
+
+        // Store the response based on question type
+        if (currentStepData.type === 'question') {
+            const questionId = currentStepData.question_id;
+
+            // Validate and store the response
+            if (currentStepData.validation === 'yes_no') {
+                // Check for yes/no response
+                const isYes = /כן|נכון|בסדר|מרוצה/i.test(userResponse);
+                const isNo = /לא|לא נכון|לא מרוצה/i.test(userResponse);
+
+                if (questionId === 'satisfaction') {
+                    this.collectedData.satisfaction = userResponse;
+                } else if (questionId === 'address_verification') {
+                    this.collectedData.address_confirmed = isYes;
+
+                    // Determine next step based on yes/no
+                    if (isYes && currentStepData.next_step_if_yes) {
+                        this.currentStep = currentStepData.next_step_if_yes - 1;
+                        await this.executeStep();
+                        return;
+                    } else if (isNo && currentStepData.next_step_if_no) {
+                        this.currentStep = currentStepData.next_step_if_no - 1;
+                        await this.executeStep();
+                        return;
+                    }
+                }
+            } else if (currentStepData.validation === 'name') {
+                this.collectedData.name = userResponse;
+            } else if (currentStepData.validation === 'city') {
+                this.collectedData.city = userResponse;
+            } else if (currentStepData.validation === 'address') {
+                this.collectedData.new_address = userResponse;
+            } else if (currentStepData.validation === 'free_text') {
+                if (questionId === 'inquiry') {
+                    this.collectedData.inquiry = userResponse;
+                } else {
+                    this.collectedData[questionId] = userResponse;
+                }
+            }
         }
 
-        this.isProcessing = false;
+        // Move to next step
+        this.currentStep = currentStepData.next_step ? currentStepData.next_step - 1 : this.currentStep + 1;
+        await this.executeStep();
     }
 
     onError(event) {
@@ -351,13 +563,15 @@ ${kb.patient_profiles.personal_assistant_capabilities.map(c => `- ${c}`).join('\
         }
     }
 
-    async speakWithOpenAI(text) {
+    async speakWithOpenAI(text, skipAddMessage = false) {
         this.isSpeaking = true;
         this.voiceIndicator.classList.add('speaking');
         this.statusText.textContent = 'משיב...';
 
-        // Display agent message
-        this.addMessage(text, 'agent');
+        // Display agent message (only for assistant mode)
+        if (!skipAddMessage) {
+            this.addMessage(text, 'agent');
+        }
 
         try {
             // Wait for configuration

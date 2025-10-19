@@ -528,3 +528,111 @@ button:focus {
         transform: scale(1);
     }
 }
+
+/* Scenario Selection */
+.scenario-selection {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(37, 48, 104, 0.1);
+    text-align: center;
+}
+
+.scenario-selection h2 {
+    color: #253068;
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.scenario-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.scenario-btn {
+    background: white;
+    border: 3px solid #e8eef5;
+    border-radius: 15px;
+    padding: 30px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    text-align: center;
+}
+
+.scenario-btn:hover {
+    border-color: #f28b20;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(242, 139, 32, 0.2);
+}
+
+.scenario-btn:active {
+    transform: translateY(-2px);
+}
+
+.scenario-icon {
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+}
+
+.scenario-btn h3 {
+    color: #253068;
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.scenario-btn p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Back Button */
+.back-button {
+    background: #f8f9fa;
+    border: 2px solid #e8eef5;
+    color: #253068;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    align-self: flex-start;
+}
+
+.back-button:hover {
+    background: #e8eef5;
+    border-color: #253068;
+}
+
+@media (max-width: 768px) {
+    .scenario-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .scenario-selection {
+        padding: 25px 20px;
+    }
+    
+    .scenario-selection h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+    
+    .scenario-btn {
+        padding: 25px 15px;
+    }
+    
+    .scenario-icon {
+        font-size: 2.5rem;
+    }
+    
+    .scenario-btn h3 {
+        font-size: 1.1rem;
+    }
+}

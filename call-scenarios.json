@@ -1,0 +1,174 @@
+{
+  "outbound_satisfaction": {
+    "name": "סקר שביעות רצון",
+    "type": "outbound",
+    "description": "שיחה יוצאת לסקר שביעות רצון ועדכון כתובת",
+    "flow": [
+      {
+        "step": 1,
+        "type": "greeting",
+        "agent_says": "שלום, מדברת נטלי, הנציגה הדיגיטלית של חברת נטלי. אנחנו מבצעים בדיקה קצרה כדי לוודא שאתם מרוצים מהשירות שלנו ולאמת את הכתובת הרשומה במערכת.",
+        "wait_for_response": true,
+        "next_step": 2
+      },
+      {
+        "step": 2,
+        "type": "question",
+        "question_id": "satisfaction",
+        "agent_says": "האם אתם מרוצים מהשירות שאתם מקבלים מחברת נטלי?",
+        "expected_answers": ["כן", "לא", "בסדר", "כן מרוצה", "לא מרוצה"],
+        "validation": "yes_no",
+        "next_step": 3
+      },
+      {
+        "step": 3,
+        "type": "question",
+        "question_id": "address_verification",
+        "agent_says": "ברצוננו לאמת את הכתובת הרשומה אצלנו במערכת. האם כתובתך היא [ADDRESS]?",
+        "expected_answers": ["כן", "לא", "נכון", "לא נכון"],
+        "validation": "yes_no",
+        "next_step_if_yes": 5,
+        "next_step_if_no": 4
+      },
+      {
+        "step": 4,
+        "type": "question",
+        "question_id": "new_address",
+        "agent_says": "בבקשה, אמור/אמרי לי מה הכתובת הנכונה שלך?",
+        "expected_answers": "free_text",
+        "validation": "address",
+        "next_step": 5
+      },
+      {
+        "step": 5,
+        "type": "closing",
+        "agent_says": "תודה רבה על שיתוף הפעולה. בשם כל צוות נטלי מאחלים לכם יום נעים ובריאות טובה.",
+        "end_call": true
+      }
+    ],
+    "data_collection": {
+      "satisfaction": "",
+      "address_confirmed": false,
+      "new_address": "",
+      "call_duration": "",
+      "timestamp": ""
+    }
+  },
+  "inbound_intake": {
+    "name": "קליטת פרטי פניה",
+    "type": "inbound",
+    "description": "שיחה נכנסת לקליטת פרטי פניה למוקד",
+    "flow": [
+      {
+        "step": 1,
+        "type": "greeting",
+        "agent_says": "שלום, אני נטלי, הנציגה הדיגיטלית של חברת נטלי ואני אקח ממך את פרטי הפניה.",
+        "wait_for_response": false,
+        "next_step": 2
+      },
+      {
+        "step": 2,
+        "type": "question",
+        "question_id": "name",
+        "agent_says": "אמור לי מה שמך?",
+        "expected_answers": "free_text",
+        "validation": "name",
+        "next_step": 3
+      },
+      {
+        "step": 3,
+        "type": "question",
+        "question_id": "city",
+        "agent_says": "תודה. איפה אתה גר?",
+        "expected_answers": "free_text",
+        "validation": "city",
+        "next_step": 4,
+        "optional": true
+      },
+      {
+        "step": 4,
+        "type": "question",
+        "question_id": "inquiry",
+        "agent_says": "תודה. מה פנייתך?",
+        "expected_answers": "free_text",
+        "validation": "free_text",
+        "next_step": 5
+      },
+      {
+        "step": 5,
+        "type": "closing",
+        "agent_says": "תודה על פנייתך, אעביר אותה לגורם הרלוונטי.",
+        "end_call": true,
+        "send_webhook": true
+      }
+    ],
+    "data_collection": {
+      "name": "",
+      "city": "",
+      "inquiry": "",
+      "call_duration": "",
+      "timestamp": "",
+      "phone_number": ""
+    }
+  },
+  "inbound_intake_short": {
+    "name": "קליטת פרטי פניה (מצומצם)",
+    "type": "inbound",
+    "description": "גרסה מצומצמת ללא עיר מגורים",
+    "flow": [
+      {
+        "step": 1,
+        "type": "greeting",
+        "agent_says": "שלום, אני נטלי, הנציגה הדיגיטלית של חברת נטלי ואני אקח ממך את פרטי הפניה.",
+        "wait_for_response": false,
+        "next_step": 2
+      },
+      {
+        "step": 2,
+        "type": "question",
+        "question_id": "name",
+        "agent_says": "אמור לי מה שמך?",
+        "expected_answers": "free_text",
+        "validation": "name",
+        "next_step": 3
+      },
+      {
+        "step": 3,
+        "type": "question",
+        "question_id": "inquiry",
+        "agent_says": "תודה. מה פנייתך?",
+        "expected_answers": "free_text",
+        "validation": "free_text",
+        "next_step": 4
+      },
+      {
+        "step": 4,
+        "type": "closing",
+        "agent_says": "תודה על פנייתך, אעביר אותה לגורם הרלוונטי.",
+        "end_call": true,
+        "send_webhook": true
+      }
+    ],
+    "data_collection": {
+      "name": "",
+      "inquiry": "",
+      "call_duration": "",
+      "timestamp": "",
+      "phone_number": ""
+    }
+  },
+  "demo_addresses": [
+    {
+      "patient_name": "דוד כהן",
+      "address": "רחוב הרצל 45, תל אביב"
+    },
+    {
+      "patient_name": "שרה אברהם",
+      "address": "רחוב ביאליק 23, חיפה"
+    },
+    {
+      "patient_name": "משה לוי",
+      "address": "שדרות ירושלים 89, ירושלים"
+    }
+  ]
+}
